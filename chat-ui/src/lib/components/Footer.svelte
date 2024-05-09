@@ -1,0 +1,1 @@
+<div class="fixed inset-x-0 bottom-0 h-5 w-full bg-primary-2 "></div>
