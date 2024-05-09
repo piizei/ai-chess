@@ -8,7 +8,7 @@ const config = {
 	theme: {
 		fontFamily: {
 			sans: ['Noto Sans'],
-			serif: ['Noto Serif'],   // can test with Orbitron
+			serif: ['Noto Serif'],
 		},
 		extend: {
 			colors: {
