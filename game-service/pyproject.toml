@@ -1,0 +1,25 @@
+[tool.poetry]
+name = "game-service"
+version = "0.1.0"
+description = ""
+authors = ["PJ <pj>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+python-dotenv = "^1.0.1"
+langchain="^0.1.15"
+langchain_core="^0.1.41"
+langchain_community="^0.0.32"
+langchain_openai="^0.1.2"
+tiktoken="^0.6.0"
+fastapi="^0.110.1"
+uvicorn="^0.29.0"
+instructor="^1.2.6"
+pytest = "^7.4.3"
+pymongo = "^4.7.2"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
