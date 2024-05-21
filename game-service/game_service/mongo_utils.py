@@ -11,9 +11,7 @@ def get_collection():
     client = pymongo.MongoClient(CONNECTION_STRING)
     db = client[DB_NAME]
     if DB_NAME not in client.list_database_names():
-        # Create a database with 400 RU throughput that can be shared across
-        # the DB's collections
-        db.command({"customAction": "CreateDatabase", "offerThroughput": 400})
+        db.command({"customAction": "CreateDatabase"})
         print("Created db '{}' with shared throughput.\n".format(DB_NAME))
     else:
         print("Using database: '{}'.\n".format(DB_NAME))

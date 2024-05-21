@@ -25,7 +25,6 @@ const config = {
 					800: '#CC4522',
 					900: '#A5371B'
 				},
-				'roche-blue': '#0B41CD',
 				'dark-blue': '#022366',
 				'light-blue': '#1482FA',
 				'extra-light-blue': '#BDE3FF',

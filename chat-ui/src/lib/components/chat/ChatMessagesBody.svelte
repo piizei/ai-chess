@@ -5,7 +5,6 @@
 	} from 'svelte';
 	let div: HTMLDivElement;
 	let autoscroll = false;
-
 	beforeUpdate(() => {
 		if (div) {
 			const scrollableDistance = div.scrollHeight - div.offsetHeight;
@@ -23,7 +22,7 @@
 		id="messages"
 		class="shadow-inner bg-slate-100 flex flex-1 scroll-snap-y flex-col space-y-4 p-3 overflow-y-scroll scrollbar-thumb-blue scrollbar-thumb-rounded scrollbar-track-blue-lighter scrollbar-w-2 scrolling-touch"
 	>
-    <slot/>
+	<slot/>
 </div>
 
 

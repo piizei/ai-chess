@@ -1,25 +1,18 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import crypto from 'crypto';
 
-const CHAT_BACKEND_URL = process.env.CHAT_BACKEND_URL || 'http://127.0.0.1:8080/chat';
+const BACKEND_URL = process.env.GAME_SERVICE_URL || 'http://127.0.0.1:8000';
 export const POST: RequestHandler = async ({ request }) => {
 	const body = await request.json();
 	const { message: prompt } = body;
 	// GET user from x-ms-client-principal-name header ir just use the string 'user'
-	const user = request.headers.get('x-ms-client-principal-name') || 'user';
-	// make the session to be a md5 has over the value of the cookie header or call it session
-	const sessionRaw = request.headers.get('cookie') || 'session';
-	const session = crypto.createHash('md5').update(sessionRaw).digest('hex');
+	const user = request.headers.get('x-ms-client-principal-name') || request.headers.get('x-client-anon-guid')  || 'user';
 	const data = {
-		prompt,
 		user,
-		session
+		message: prompt
 	};
-	console.log(data);
-	console.log(CHAT_BACKEND_URL);
 	try {
-		const response = await fetch(CHAT_BACKEND_URL, {
+		const response = await fetch(BACKEND_URL + '/vote', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json'

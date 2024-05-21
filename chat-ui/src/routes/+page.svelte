@@ -3,52 +3,88 @@
 	import ChatMessagesBody from '$lib/components/chat/ChatMessagesBody.svelte';
 	import ConversationHeader from '$lib/components/chat/ConversationHeader.svelte';
 	import { Alert } from 'flowbite-svelte';
+	import { onMount } from 'svelte';
 	const botAvatarUrl =
-			'images/drpill.jpg';
+			'images/chess_bot.jpeg';
 	const userAvatarUrl =
 			'https://images.unsplash.com/photo-1590031905470-a1a1feacbb0b?ixlib=rb-1.2.1&amp;ixid=eyJhcHBfaWQiOjEyMDd9&amp;auto=format&amp;fit=facearea&amp;facepad=3&amp;w=144&amp;h=144';
+
+	const randomGuid =  Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+
 	type message = {
 		content: string;
-		citations?: string[];
-		reasoning?: string;
 		type: 'me' | 'other';
+		imageUrl?: string | null;
 	};
+
+	type GameStatus = {
+		timestamp: string;
+		starts: string;
+		is_over: boolean;
+		winner: null | string;
+		moves: string[];
+		current_fen: string;
+		game_id: string;
+		last_move_at: string;
+		last_move_described: string;
+		turn_duration_seconds: number;
+		last_move: null | string;
+		last_move_img: undefined| null | string;
+	}
 	let error: string | null = null;
 	let isLoadingANewMessage = false;
 
 	type chatMessage = {
-		content: string[];
-		citations?: string[];
-		reasoning?: string;
+		content: message[];
 		username: string;
 		who: 'other' | 'me';
 		avatarUrl?: string;
+		imageUrl?: string | null;
 	};
 
 	let messages: message[] = [
 		{
-			content: 'Guten Tag, wie kann ich Dir weiterhelfen?',
+			content: 'Welcome player.',
 			type: 'other'
 		}
 	];
+
+	let gameStatus: GameStatus | null
+
 
 	let newMessage = '';
 	$: trimmedNewMessage = newMessage.trim();
 	$: chatMessagesFromMessagesWithGroupedContentPerUser = messages.reduce((acc, message) => {
 		if (acc && acc.length > 0 && acc[acc.length - 1].who === message.type) {
-			acc[acc.length - 1].content.push(message.content);
+			acc[acc.length - 1].content.push(message);
 		} else {
-			acc.push({
-				content: [message.content],
-				reasoning: message.reasoning,
-				citations: message.citations,
+			// find if any message has imageUrl:
+			const msg = {
+				content: [message],
 				who: message.type,
 				username: message.type === 'other' ? 'Chat GPT' : 'User Name',
-				avatarUrl: message.type === 'other' ? botAvatarUrl : userAvatarUrl
-			});
+				avatarUrl: message.type === 'other' ? botAvatarUrl : userAvatarUrl,
+			}
+			acc.push(msg);
 		}
 		return acc;
 	}, [] as chatMessage[]);
+	// Check game status from server each 5 secs.
+	const interval = async() => {
+		const result = await updateStatus()
+		if (gameStatus?.timestamp !== result.timestamp) {
+			gameStatus = result
+			messages = [...messages, { content: result.last_move_described, imageUrl: '/api/board/' + result.last_move_img ,  type: 'other' }];
+			console.log(messages)
+		}
+
+		setTimeout(interval, 5000);
+	}
+
+	onMount(async () => {
+		await interval()
+	})
+
 
 	async function sendChatMessage() {
 		let search = ''
@@ -58,18 +94,32 @@
 			newMessage = '';
 		}
 
-		const searchResult = await sendMessage('/api/search', search);
-		console.log("search", searchResult)
-		if(searchResult.answer) {
-			messages = [...messages, { content: searchResult.answer, type: 'other' }];
-			messages = [...messages, { content: 'Ich werde die Inhalte für Dich zusammenfassen.', type: 'other' }];
-		}
 
 		const chatResult = await sendMessage('/api/chat', search);
-		console.log(chatResult)
 		if(chatResult.answer) {
-			messages = [...messages, { content: chatResult.answer, reasoning: chatResult.reasoning, type: 'other' }];
+			messages = [...messages, { content: chatResult.answer, type: 'other' }];
 		}
+	}
+
+	function  getAnonGuid() {
+		return randomGuid
+	}
+
+	async function updateStatus(): Promise<GameStatus> {
+		const response = await fetch('/api/status', {
+			method: 'GET', // Specify the method
+			headers: {
+				'Content-Type': 'application/json',
+				'x-client-anon-guid': getAnonGuid()
+			}
+		});
+		const result = await response.json();
+		if(result.error) {
+			console.log(result.error)
+			error = JSON.stringify(result.error);
+		}
+		return result
+
 	}
 
 	async function sendMessage(endpoint: string, message: string) {
@@ -79,9 +129,10 @@
 		const response = await fetch(endpoint, {
 			method: 'POST', // Specify the method
 			headers: {
-				'Content-Type': 'application/json' // Specify the content type
+				'Content-Type': 'application/json',
+				'x-client-anon-guid': getAnonGuid()
 			},
-			body: JSON.stringify(data) // Stringify the data
+			body: JSON.stringify(data)
 		});
 		const result = await response.json();
 		if(result.error) {
@@ -106,7 +157,7 @@
 		clearMessageSession()
 		messages = [
 			{
-				content: 'Guten Tag, wie kann ich Dir weiterhelfen?',
+				content: 'Welcome player',
 				type: 'other'
 			}
 		];
@@ -114,7 +165,7 @@
 </script>
 <div class="container md-auto">
 	<div class="flex-1 p:2 sm:p-6 justify-between flex flex-col h-[calc(100vh-128px)]">
-		<ConversationHeader username="Dr.Pill" jobTitle="Junior AI" avatarUrl={botAvatarUrl} on:message={clearMessages}/>
+		<ConversationHeader username="Chessy" jobTitle="Chess AI" avatarUrl={botAvatarUrl} on:message={clearMessages}/>
 		<ChatMessagesBody>
 			{#each chatMessagesFromMessagesWithGroupedContentPerUser as chatMessage}
 				<ChatMessage {...chatMessage} />
