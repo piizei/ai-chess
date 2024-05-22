@@ -1,15 +1,18 @@
 import asyncio
+import os
 import secrets
 from datetime import datetime
 
 import requests
 from fentoboardimage import fenToImage, loadPiecesFolder
 
-from game_service.model import Game
+from game_service.commentator_agent import comment_move, comment_victory
+from game_service.model import Game, games
 from game_service.mongo_utils import get_collection
+from game_service.vote_service import get_voted_move
 
-base_url = "http://localhost:3000/api/v1/chess/two"
-stockfish = "http://localhost:8080/"
+base_url = os.getenv("CHESS_API")
+stockfish = os.getenv("STOCKFISH_SERVER")
 
 loop_interval = 5
 
@@ -23,10 +26,11 @@ def create_game(start_date: datetime):
         winner=None,
         moves=[],
         current_fen="",
+        previous_fen=None,
         game_id="",
         last_move_at=datetime.now(),
         last_move_described=None,
-        turn_duration_seconds=20,
+        turn_duration_seconds=60,
         last_move=None,
         last_move_img=None,
     )
@@ -52,11 +56,19 @@ def is_fen_white(game: Game):
     return False
 
 
-games = {}
+
+def get_turn() -> int:
+    if "current_game" in games:
+        return len(games["current_game"].moves)
+    else:
+        return 0
 
 
 def get_game():
-    return games["current_game"]
+    if "current_game" in games:
+        return games["current_game"]
+    else:
+        return None
 
 
 def get_previous_game():
@@ -81,24 +93,14 @@ async def game_loop(static_dir: str):
                 # check if turn_duration_seconds has passed since last move
                 if (datetime.now() - game.last_move_at).seconds > game.turn_duration_seconds:
                     print("Time has passed")
+                    move = get_voted_move(len(game.moves), game.current_fen)
                     # check if white moves
                     if is_fen_white(game):
-                        # change to black turn
-                        print("White moves")
-                        response = requests.post(stockfish, json={"fen": game.current_fen})
-                        move = response.text.split(" ")[1]
-                        (start, end) = move[:2], move[2:]
-                        print(move)
-                        game.last_move_described = f"White moves {start} to {end}"
-                        await update_turn(static_dir, game, start, end)
+                        print("Humans move")
+                        await update_turn(static_dir, game, move, "human")
                     else:
-                        print("Black moves")
-                        response = requests.post(stockfish, json={"fen": game.current_fen})
-                        move = response.text.split(" ")[1]
-                        (start, end) = move[:2], move[2:]
-                        print(move)
-                        game.last_move_described = f"Black moves {start} to {end}"
-                        await update_turn(static_dir, game, start, end)
+                        print("AI moves")
+                        await update_turn(static_dir, game, move, "AI")
             else:
                 print("No game found")
 
@@ -109,22 +111,25 @@ async def game_loop(static_dir: str):
             await asyncio.sleep(loop_interval)
 
 
-async def update_turn(static_dir, game, start, end):
-    print("Making move")
+async def update_turn(static_dir, game, move, player):
+    print(f"Making move {move}")
+    (start, end) = move[:2], move[2:]
     requests.post(f"{base_url}/move", json={"game_id": game.game_id, "from": start, "to": end})
     print("Checking game")
     response = requests.post(f"{base_url}/check", json={"game_id": game.game_id})
     game.is_over = response.json()["status"] != "game continues"
+    game.previous_fen = game.current_fen
+    response = requests.post(f"{base_url}/fen", json={"game_id": game.game_id})
+    game.current_fen = response.json()["fen_string"]
     if game.is_over:
         game.winner = response.json()["status"]
-    print("Checking")
-    response = requests.post(f"{base_url}/fen", json={"game_id": game.game_id})
-    print(response.json())
-    game.current_fen = response.json()["fen_string"]
+        game.last_move_described = comment_victory(game.current_fen, game.previous_fen, player, game.winner)
+    else:
+        game.last_move_described = comment_move(game.current_fen, game.previous_fen, player, start+end)
     print("Creating image")
     image = fenToImage(
         fen=game.current_fen,
-        squarelength=30,
+        squarelength=33,
         darkColor="#D18B47",
         lightColor="#FFCE9E",
         pieceSet=loadPiecesFolder("./pieces"),

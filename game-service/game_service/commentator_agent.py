@@ -1,3 +1,5 @@
+import os
+
 import instructor
 
 from game_service.model import Move
@@ -5,25 +7,76 @@ from game_service.openai_utils import get_openai
 
 client = instructor.from_openai(get_openai())
 
-system_message = """
-Given a chessboard configuration in FEN notation and a natural language description of a move, output the start and end positions of the move in algebraic notation.
+system_message_comment = """
+You are a enthusiastic sports commentator, commenting a game of chess.
 
-FEN Notation: {FEN}
+You will given a chessboard configuration in FEN notation and a description of a move, and a player.
+The players are an AI and a human player.
 
-User Move Description: {MOVE}
+Please make cheerful comments about the game, and clearly side with the AI. Make also (fake) historical references to
+same moves used in historical games.
 
-Interpret the FEN notation to understand the current board setup.
-Analyze the user's move description to identify the piece and its intended move.
-Translate the move into specific start and end positions using algebraic notation.
+Please stay polite and cheerful, try to limit your comments into 2-3 sentences.
+use previous fen to check if any piece was captured in this move and comment if were.
+If no piece were captured, don't mention about it, just comment the move.
+You are provided the chat history, try to avoid using same expressions as the previous comments.
+
+The board fen: {FEN}
+The board before the current move (previous fen): {PREVIOUS_FEN}
+The move: {MOVE}
+Player in turn making the move: {PLAYER}
+
+Chat history:
+{HISTORY}
 
 Output:
 """
 
+system_message_victory = """
+ou are a enthusiastic sports commentator, commenting a game of chess.
 
-def get_move(prompt: str, fen: str) -> Move:
-    user_prompt = system_message.replace("{FEN}", fen).replace("{MOVE}", prompt)
-    return client.chat.completions.create(
-        model="gpt-4-turbo",
-        response_model=Move,
+You will given a chessboard configuration in FEN notation and a description of a move, and a player.
+The players are an AI and a human player.
+Please make cheerful comments about the game, and clearly side with the AI. 
+
+Please stay polite and cheerful, try to limit your comments into 2-3 sentences.
+The game has ended. Please make a comment about the victory of the  {PLAYER}
+
+use previous fen to check how the game ended in this situation.
+
+The board fen: {FEN}
+The board before the current move (previous fen): {PREVIOUS_FEN}
+Reason: {REASON}
+"""
+history = []
+
+
+def comment_move(fen: str, previous_fen: str, player: str, move: str) -> str:
+    user_prompt = (system_message_comment
+                   .replace("{FEN}", fen)
+                   .replace("{PREVIOUS_FEN}", previous_fen)
+                   .replace("{MOVE}", move)
+                   .replace("{PLAYER}", player)
+                   .replace("{HISTORY}", str(history)))
+    msg = client.chat.completions.create(
+        model=os.environ.get("AZURE_OPENAI_DEPLOYMENT_NAME1"),
+        response_model=str,
         messages=[{"role": "user", "content": user_prompt}],
     )
+    history.append(msg)
+    return msg
+
+
+def comment_victory(fen: str, previous_fen: str, player: str, reason: str) -> str:
+    user_prompt = (system_message_victory
+                   .replace("{FEN}", fen)
+                   .replace("{PREVIOUS_FEN}", previous_fen)
+                   .replace("{PLAYER}", player)
+                   .replace("{REASON}", reason))
+    msg = client.chat.completions.create(
+        model=os.environ.get("AZURE_OPENAI_DEPLOYMENT_NAME1"),
+        response_model=str,
+        messages=[{"role": "user", "content": user_prompt}],
+    )
+    history.append(msg)
+    return msg

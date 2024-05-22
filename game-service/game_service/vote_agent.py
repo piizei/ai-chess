@@ -1,3 +1,5 @@
+import os
+
 import instructor
 
 from game_service.model import Move
@@ -23,7 +25,7 @@ Output:
 def get_move(prompt: str, fen: str) -> Move:
     user_prompt = system_message.replace("{FEN}", fen).replace("{MOVE}", prompt)
     return client.chat.completions.create(
-        model="gpt-4-turbo",
+        model=os.environ.get("AZURE_OPENAI_DEPLOYMENT_NAME1"),
         response_model=Move,
         messages=[{"role": "user", "content": user_prompt}],
     )
