@@ -1,4 +1,5 @@
 import asyncio
+import os
 import tempfile
 import threading
 import logging
@@ -36,6 +37,8 @@ app = FastAPI(lifespan=lifespan)
 
 app.mount("/static", StaticFiles(directory=static_dir), name="static")
 
+votes_per_user = {}
+
 
 @app.post("/vote")
 async def vote_move(msg: VoteMessage) -> VoteResponse:
@@ -43,10 +46,25 @@ async def vote_move(msg: VoteMessage) -> VoteResponse:
         turn = 0
         if get_game() is not None:
             turn = len(get_game().moves)
+        if turn % 2 > 0:
+            span.add_event("Invalid vote")
+            return VoteResponse(is_ok=False, message="Please wait, It's AI's turn to move.")
+        try:  # just ignore if there is concurrency issues
+            if turn in votes_per_user:
+                if msg.user in votes_per_user[turn]:
+                    span.add_event("multiple vote")
+                    return VoteResponse(is_ok=False, message="You have already voted for this turn.")
+                else:
+                    votes_per_user[turn].append(msg.user)
+            else:
+                votes_per_user[turn] = [msg.user]
+        except:
+            span.add_event("Vote management crashed")
+
         msg.turn = turn
         await task_queue.put(msg)
         span.add_event("Queued vote")
-        return VoteResponse(is_ok=True, message="Thank you, Your vote has been registered.")
+        return VoteResponse(is_ok=True, message="Thank you, your vote has been registered.")
 
 
 @app.get("/status")
@@ -63,4 +81,6 @@ async def status():
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    #env get port
+    port = int(os.getenv("PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port)

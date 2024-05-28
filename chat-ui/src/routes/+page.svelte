@@ -110,8 +110,8 @@
 
 
 		const chatResult = await sendMessage('/api/chat', search);
-		if(chatResult.answer) {
-			messages = [...messages, { content: chatResult.answer, type: 'other' }];
+		if(chatResult.message) {
+			messages = [...messages, { content: chatResult.message, type: 'other' }];
 		}
 	}
 
@@ -131,6 +131,8 @@
 		if(result.error) {
 			console.log(result.error)
 			error = JSON.stringify(result.error);
+		} else {
+			error = null;
 		}
 		return result
 
