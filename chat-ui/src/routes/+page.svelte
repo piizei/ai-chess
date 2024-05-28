@@ -44,7 +44,7 @@
 
 	let messages: message[] = [
 		{
-			content: 'Welcome player.',
+			content: "Welcome player.<br>This is co-operative chess.<br/>When it's human turn, you can enter a move (in free text format).<br/>Most voted move will be executed after 3 minutes.",
 			type: 'other'
 		}
 	];
@@ -70,20 +70,34 @@
 		return acc;
 	}, [] as chatMessage[]);
 	// Check game status from server each 5 secs.
+	let gameStartTime: Date | null = null;
 	const interval = async() => {
-		const result = await updateStatus()
-		if (gameStatus?.timestamp !== result.timestamp) {
-			gameStatus = result
-			messages = [...messages, { content: result.last_move_described, imageUrl: '/api/board/' + result.last_move_img ,  type: 'other' }];
-			console.log(messages)
+		const result = await updateStatus();
+		if (!gameStartTime) {
+			gameStartTime = new Date(result.starts);
 		}
-
-		setTimeout(interval, 5000);
+		if (gameStatus?.timestamp !== result.timestamp) {
+			gameStatus = result;
+			const isBeforeGameStart = !result.last_move_described && new Date() < gameStartTime;
+			if (isBeforeGameStart) {
+				const start = gameStartTime.toLocaleTimeString();
+				messages = [...messages, { content: `Game has not started yet<br>New game starts at ${start}`, type: 'other' }];
+				messages = [...messages, { content: `You can vote already for first move`, type: 'other' }];
+				return;
+			} else if (!result.last_move_described) {
+				messages = [...messages, { content: `Game has started`, type: 'other' }];
+				messages = [...messages, { content: `You can vote for first move`, type: 'other' }];
+				return;
+			}
+			messages = [...messages, { content: result.last_move_described, imageUrl: '/api/board/' + result.last_move_img ,  type: 'other' }];
+			console.log(messages);
+		}
 	}
 
 	onMount(async () => {
-		await interval()
-	})
+		await interval();
+		setInterval(interval, 5000);
+	});
 
 
 	async function sendChatMessage() {

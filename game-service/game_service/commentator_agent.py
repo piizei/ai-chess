@@ -1,6 +1,7 @@
 import os
 
 import instructor
+from datetime import datetime
 
 from game_service.model import Move
 from game_service.openai_utils import get_openai
@@ -64,7 +65,7 @@ def comment_move(fen: str, previous_fen: str, player: str, move: str) -> str:
         messages=[{"role": "user", "content": user_prompt}],
     )
     history.append(msg)
-    return msg
+    return datetime.now().strftime("%H:%M:%S") + " " + msg
 
 
 def comment_victory(fen: str, previous_fen: str, player: str, reason: str) -> str:

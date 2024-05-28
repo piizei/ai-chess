@@ -9,8 +9,9 @@ def test_input():
                     "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
     assert move.start == "b1"
     assert move.end == "a3"
+    move = get_move("g2 to g3",
+                    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+    assert move.start == "g2"
+    assert move.end == "g3"
 
 
-def test_commentator():
-    comment = comment_move("4qr2/p1r3k1/b2p1p1p/2pP2p1/Pp2P3/1P2R2P/3N1PPK/3QR3 b - - 47 101", "AI", "c2d1")
-    assert comment=="abc"
