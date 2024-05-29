@@ -9,3 +9,5 @@ Following services are used from GitHub as is, and are not modified:
 The rest are home-made and with MIT license.
 - chess-ui (this is effort of multiple people)
 - game-service
+
+![chess-screenshot.png](chess-screenshot.png)
