@@ -10,4 +10,10 @@ The rest are home-made and with MIT license.
 - chess-ui (this is effort of multiple people)
 - game-service
 
+## Installation
+Easy peasy, azure developer cli: `azd up`
+(creates cloud resources, cost will apply)
+
+Destroy the env with `azd down`
+
 ![chess-screenshot.png](chess-screenshot.png)

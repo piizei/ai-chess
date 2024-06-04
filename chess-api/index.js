@@ -9,6 +9,10 @@ var player = require('./api/models/playerModel');
 var status = require('./api/models/chessboardModel');
 var port = process.env.PORT || 3000;
 
+if (process.env.APPLICATIONINSIGHTS_CONNECTION_STRING) {
+  console.log("Using azure monitor");
+  useAzureMonitor()
+}
 
 // var server = app.listen(3000, function () {
 //     var host = server.address().address;

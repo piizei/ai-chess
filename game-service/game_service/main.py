@@ -1,13 +1,13 @@
 import asyncio
 import os
 import tempfile
-import threading
 import logging
 from contextlib import asynccontextmanager
 
 from dotenv import load_dotenv
 from fastapi import FastAPI
 import uvicorn
+from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 from starlette.staticfiles import StaticFiles
 
 from game_service.telemetry import tracer
@@ -34,7 +34,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
-
+FastAPIInstrumentor.instrument_app(app)
 app.mount("/static", StaticFiles(directory=static_dir), name="static")
 
 votes_per_user = {}
@@ -55,6 +55,7 @@ async def vote_move(msg: VoteMessage) -> VoteResponse:
                     span.add_event("multiple vote")
                     return VoteResponse(is_ok=False, message="You have already voted for this turn.")
                 else:
+                    span.add_event("vote")
                     votes_per_user[turn].append(msg.user)
             else:
                 votes_per_user[turn] = [msg.user]

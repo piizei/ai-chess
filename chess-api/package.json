@@ -9,6 +9,7 @@
   "author": "Anze Mur",
   "license": "ISC",
   "dependencies": {
+    "@azure/monitor-opentelemetry": "^1.5.0",
     "chess-ai-kong": "^0.3.3",
     "chess.js": "^0.10.2",
     "dotenv": "^16.4.5",
