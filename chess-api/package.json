@@ -15,7 +15,7 @@
     "dotenv": "^16.4.5",
     "express": "^4.16.2",
     "hhmmss": "^1.0.0",
-    "mongoose": "^5.7.5",
+    "mongoose": "^5.13.20",
     "mongose": "0.0.2-security",
     "parse-seconds": "^1.0.0",
     "swagger-tools": "^0.10.3"
