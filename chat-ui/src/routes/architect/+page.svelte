@@ -3,6 +3,7 @@
     import ChatMessagesBody from '$lib/components/chat/ChatMessagesBody.svelte';
     import ConversationHeader from '$lib/components/chat/ConversationHeader.svelte';
     import { Alert } from 'flowbite-svelte';
+    import MenuLink from "$lib/components/MenuLink.svelte";
     const botAvatarUrl =
         'images/avatar_architect.jpeg';
     const userAvatarUrl =
@@ -65,8 +66,8 @@
 
 
         const chatResult = await sendMessage('/api/chat', search);
-        if(chatResult.message) {
-            messages = [...messages, { content: chatResult.message, type: 'other' }];
+        if(chatResult.answer) {
+            messages = [...messages, { content: chatResult.answer, type: 'other' }];
         }
     }
 
@@ -118,7 +119,8 @@
 </script>
 <div class="container md-auto">
     <div class="flex-1 p:2 sm:p-6 justify-between flex flex-col h-[calc(100vh-128px)]">
-        <ConversationHeader username="Chessy" jobTitle="Chess AI" avatarUrl={botAvatarUrl} on:message={clearMessages}/>
+        <MenuLink activeUrl="false" href="/" content="Home" />
+        <ConversationHeader username="Architect" jobTitle="Chat AI" avatarUrl={botAvatarUrl} on:message={clearMessages}/>
         <ChatMessagesBody>
             {#each chatMessagesFromMessagesWithGroupedContentPerUser as chatMessage}
                 <ChatMessage {...chatMessage} />
@@ -145,13 +147,13 @@
                         placeholder="Write your message!"
                         bind:value={newMessage}
                         on:keydown={(event) => event.key === 'Enter' && sendChatMessage()}
-                        class="w-full focus:outline-none focus:placeholder-gray-400 text-primary-3 placeholder-gray-600 pl-3 bg-gray-100 rounded-md py-3"
+                        class="w-full text-black focus:outline-none focus:placeholder-gray-400 text-primary-3 placeholder-gray-600 pl-3 bg-gray-100 rounded-md py-3"
                 />
                 <div class="absolute right-0 items-center inset-y-0 hidden sm:flex">
                     <button
                             type="button"
                             on:click={sendChatMessage}
-                            class="inline-flex items-center justify-center rounded-lg px-4 py-3 transition duration-500 ease-in-out text-primary-1 bg-primary-2 hover:bg-accent-5 focus:outline-none"
+                            class="inline-flex items-center justify-center rounded-lg px-4 py-3 transition duration-500 ease-in-out text-gray-700 bg-primary-2 hover:bg-accent-5 focus:outline-none"
                     >
                         <span class="font-bold">Send</span>
                         <svg

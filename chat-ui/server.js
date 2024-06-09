@@ -32,6 +32,6 @@ app.use((req, res, next) => {
 });
 app.use(handler);
 
-app.listen(5173, () => {
+app.listen(3000, () => {
 	console.log('listening on port 3000');
 });

@@ -8,6 +8,11 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.11"
 
+[tool.poetry.group.rag_service.dependencies]
+rag_service ={ path = "./rag-service", develop = true }
+
+[tool.poetry.group.game_service.dependencies]
+game_service ={ path = "./game-service", develop = true }
 
 [build-system]
 requires = ["poetry-core"]

@@ -111,7 +111,7 @@
 		}
 
 
-		const chatResult = await sendMessage('/api/chat', search);
+		const chatResult = await sendMessage('/api/vote', search);
 		if(chatResult.message) {
 			messages = [...messages, { content: chatResult.message, type: 'other' }];
 		}
@@ -217,7 +217,7 @@
 					<button
 							type="button"
 							on:click={sendChatMessage}
-							class="inline-flex items-center justify-center rounded-lg px-4 py-3 transition duration-500 ease-in-out text-primary-1 bg-primary-2 hover:bg-accent-5 focus:outline-none"
+							class="inline-flex items-center justify-center rounded-lg px-4 py-3 transition duration-500 ease-in-out text-gray-700 bg-primary-2 hover:bg-accent-5 focus:outline-none"
 					>
 						<span class="font-bold">Send</span>
 						<svg
