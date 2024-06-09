@@ -2,7 +2,7 @@ import os
 from dotenv import dotenv_values
 
 default_envs = {
-    "SEARCH_INDEX": "confluence",
+    "AZURE_SEARCH_INDEX": "default",
     "EMBEDDING_MODEL": "text-embedding-ada-002",
     "AZURE_SEARCH_API_VERSION": "2023-11-01"
 }

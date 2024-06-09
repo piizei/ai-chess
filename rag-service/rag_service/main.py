@@ -37,7 +37,7 @@ class ChatResponse(BaseModel):
 
 @app.post("/chat")
 async def chat(msg: ChatRequest) -> ChatResponse:
-    retriever = AISearchRetriever(indexes=config["SEARCH_INDEX"])
+    retriever = AISearchRetriever(indexes=config["AZURE_SEARCH_INDEX"])
     chat_message_history = MongoDBChatMessageHistory(
         session_id=msg.session,
         connection_string=config["MONGODB_CONNECTION_STRING"]

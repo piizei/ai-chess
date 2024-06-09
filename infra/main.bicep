@@ -26,6 +26,9 @@ param stockfishServerDefinition object
 param gameServiceExists bool
 @secure()
 param gameServiceDefinition object
+@secure()
+param azureSearchKey string
+param azureSearchEndpoint string
 
 @description('Id of the user or app to assign application roles')
 param principalId string
@@ -198,6 +201,31 @@ module gameService './app/game-service.bicep' = {
     azureOpenAiEndpoint1: azureOpenAiEndpoint1
     azureOpenAiApiKey1: azureOpenAiApiKey1
     azureOpenDeploymentName1: azureOpenDeploymentName1
+    cosmosDbConnectionString: vault.getSecret(cosmosDb.outputs.connectionStringKey)
+    allowedOrigins: [
+      'https://${abbrs.appContainerApps}chat-ui-${resourceToken}.${appsEnv.outputs.domain}'
+    ]
+  }
+  scope: rg
+}
+
+module gameService './app/rag-service.bicep' = {
+  name: 'rag-service'
+  params: {
+    name: '${abbrs.appContainerApps}rag-service-${resourceToken}'
+    location: location
+    tags: tags
+    identityName: '${abbrs.managedIdentityUserAssignedIdentities}rag-service-${resourceToken}'
+    applicationInsightsName: monitoring.outputs.applicationInsightsName
+    containerAppsEnvironmentName: appsEnv.outputs.name
+    containerRegistryName: registry.outputs.name
+    exists: gameServiceExists
+    appDefinition: gameServiceDefinition
+    azureOpenAiEndpoint: azureOpenAiEndpoint2
+    azureOpenAiApiKey: azureOpenAiApiKey2
+    azureOpenDeploymentName: azureOpenDeploymentName2
+    azureSearchEndpoint: azureSearchEndpoint
+    azureSearchKey: azureSearchKey
     cosmosDbConnectionString: vault.getSecret(cosmosDb.outputs.connectionStringKey)
     allowedOrigins: [
       'https://${abbrs.appContainerApps}chat-ui-${resourceToken}.${appsEnv.outputs.domain}'
