@@ -111,6 +111,10 @@ resource app 'Microsoft.App/containerApps@2023-05-02-preview' = {
               value: apiUrls[2]
             }
             {
+              name: 'RAG_SERVICE_URL'
+              value: apiUrls[3]
+            }
+            {
               name: 'PORT'
               value: '3000'
             }

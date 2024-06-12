@@ -132,15 +132,15 @@ resource app 'Microsoft.App/containerApps@2023-05-02-preview' = {
             }
             {
               name: 'AZURE_OPENAI_ENDPOINT'
-              value: azureOpenAiEndpoint2
+              value: azureOpenAiEndpoint
             }
             {
               name: 'AZURE_OPENAI_API_KEY'
-              value: azureOpenAiApiKey2
+              value: azureOpenAiApiKey
             }
             {
               name: 'AZURE_OPENAI_DEPLOYMENT_NAME'
-              value: azureOpenDeploymentName2
+              value: azureOpenDeploymentName
             }
             {
                           name: 'AZURE_SEARCH_KEY'

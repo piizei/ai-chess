@@ -33,7 +33,7 @@ def create_game(start_date: datetime):
         game_id="",
         last_move_at=start_date,
         last_move_described=None,
-        turn_duration_seconds=300,
+        turn_duration_seconds=180,
         last_move=None,
         last_move_img=None,
     )

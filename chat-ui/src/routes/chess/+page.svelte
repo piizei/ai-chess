@@ -3,7 +3,7 @@
 	import ChatMessagesBody from '$lib/components/chat/ChatMessagesBody.svelte';
 	import ConversationHeader from '$lib/components/chat/ConversationHeader.svelte';
 	import { Alert } from 'flowbite-svelte';
-	import { onMount } from 'svelte';
+	import { onDestroy, onMount } from 'svelte';
 	import Header from '$lib/components/Header.svelte';
 	import MenuLink from '$lib/components/MenuLink.svelte';
 	const botAvatarUrl =
@@ -46,7 +46,7 @@
 
 	let messages: message[] = [
 		{
-			content: "Welcome player.<br>This is co-operative chess.<br/>When it's human turn, you can enter a move (in free text format).<br/>Most voted move will be executed after 3 minutes.",
+			content: "Welcome player.<br>This is co-operative chess.<br/>When it's white's turn, you can enter a move (in free text format).<br/>Most voted move will be executed after 3 minutes.",
 			type: 'other'
 		}
 	];
@@ -95,12 +95,15 @@
 			console.log(messages);
 		}
 	}
+	const intervalNr = setInterval(async () => {
+		interval();
+	}, 10000);
 
 	onMount(async () => {
-		await interval();
-		setInterval(interval, 5000);
+		interval();
 	});
 
+	onDestroy(() => clearInterval(intervalNr));
 
 	async function sendChatMessage() {
 		let search = ''
@@ -182,7 +185,7 @@
 	}
 </script>
 <div class="container md-auto">
-	<div class="flex-1 p:2 sm:p-6 justify-between flex flex-col h-[calc(100vh-128px)]">
+	<div class="flex-1 p:2 sm:p-6 justify-between flex flex-col h-[calc(100vh-24px)]">
 		<MenuLink activeUrl="false" href="/" content="Home" />
 		<ConversationHeader username="Chessy" jobTitle="Chess AI" avatarUrl={botAvatarUrl} on:message={clearMessages}/>
 		<ChatMessagesBody>

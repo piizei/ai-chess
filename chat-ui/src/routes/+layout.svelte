@@ -1,7 +1,5 @@
 <script lang="ts">
 	import '../app.postcss';
-
-	import Footer from '$lib/components/Footer.svelte';
 	import { fade } from 'svelte/transition';
 	import type { LayoutData } from './$types';
 
@@ -24,4 +22,3 @@
 		@apply bg-gradient-to-r from-pink to-yellow;
 	}
 </style>
-<Footer />

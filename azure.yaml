@@ -23,6 +23,12 @@ services:
         language: python
         docker:
             path: Dockerfile
+    rag-service:
+        project: rag-service
+        host: containerapp
+        language: python
+        docker:
+            path: Dockerfile
     stockfish-server:
         project: stockfish-server
         host: containerapp

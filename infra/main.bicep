@@ -6,8 +6,13 @@ targetScope = 'subscription'
 param environmentName string
 
 param azureOpenAiEndpoint1 string
+@secure()
 param azureOpenAiApiKey1 string
 param azureOpenDeploymentName1 string
+param azureOpenAiEndpoint2 string
+@secure()
+param azureOpenAiApiKey2 string
+param azureOpenDeploymentName2 string
 
 
 @minLength(1)
@@ -138,6 +143,7 @@ module chatUi './app/chat-ui.bicep' = {
       chessApi.outputs.uri
       stockfishServer.outputs.uri
       gameService.outputs.uri
+      ragService.outputs.uri
     ]
   }
   scope: rg
@@ -209,7 +215,7 @@ module gameService './app/game-service.bicep' = {
   scope: rg
 }
 
-module gameService './app/rag-service.bicep' = {
+module ragService './app/rag-service.bicep' = {
   name: 'rag-service'
   params: {
     name: '${abbrs.appContainerApps}rag-service-${resourceToken}'
@@ -226,6 +232,7 @@ module gameService './app/rag-service.bicep' = {
     azureOpenDeploymentName: azureOpenDeploymentName2
     azureSearchEndpoint: azureSearchEndpoint
     azureSearchKey: azureSearchKey
+    apiUrls: []
     cosmosDbConnectionString: vault.getSecret(cosmosDb.outputs.connectionStringKey)
     allowedOrigins: [
       'https://${abbrs.appContainerApps}chat-ui-${resourceToken}.${appsEnv.outputs.domain}'

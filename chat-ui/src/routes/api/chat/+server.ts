@@ -2,7 +2,7 @@ import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import crypto from 'crypto';
 
-const BACKEND_URL = process.env.GAME_SERVICE_URL || 'http://127.0.0.1:8001';
+const BACKEND_URL = process.env.RAG_SERVICE_URL || 'http://127.0.0.1:8001';
 export const POST: RequestHandler = async ({ request }) => {
 	const body = await request.json();
 	const { message: prompt } = body;
