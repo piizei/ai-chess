@@ -7,7 +7,7 @@ export const POST: RequestHandler = async ({ request }) => {
 	const body = await request.json();
 	const { message: prompt } = body;
 	// GET user from x-ms-client-principal-name header ir just use the string 'user'
-	const user = request.headers.get('x-ms-client-principal-name') || request.headers.get('x-client-anon-guid')  || 'user';
+	const user = request.headers.get('x-ms-client-principal-name') || 'user';
 	const sessionRaw = request.headers.get('cookie') || 'session';
 	const session = crypto.createHash('md5').update(sessionRaw).digest('hex');
 	const data = {
@@ -16,6 +16,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		session
 	};
 	try {
+		console.log(BACKEND_URL + '/chat', data)
 		const response = await fetch(BACKEND_URL + '/chat', {
 			method: 'POST',
 			headers: {

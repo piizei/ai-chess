@@ -8,8 +8,8 @@ COPY pyproject.toml README.md ./
 RUN pip install poetry && \
     poetry config virtualenvs.create false
 COPY game_service/ game_service/
+COPY game_service/pieces pieces/
 RUN poetry install
 WORKDIR /usr/src/app
-
 EXPOSE 80
 ENTRYPOINT ["python", "game_service/main.py"]

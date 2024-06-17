@@ -4,14 +4,11 @@
 	import ConversationHeader from '$lib/components/chat/ConversationHeader.svelte';
 	import { Alert } from 'flowbite-svelte';
 	import { onDestroy, onMount } from 'svelte';
-	import Header from '$lib/components/Header.svelte';
 	import MenuLink from '$lib/components/MenuLink.svelte';
 	const botAvatarUrl =
 			'images/chess_bot.jpeg';
 	const userAvatarUrl =
 			'https://images.unsplash.com/photo-1590031905470-a1a1feacbb0b?ixlib=rb-1.2.1&amp;ixid=eyJhcHBfaWQiOjEyMDd9&amp;auto=format&amp;fit=facearea&amp;facepad=3&amp;w=144&amp;h=144';
-
-	const randomGuid =  Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 
 	type message = {
 		content: string;
@@ -92,6 +89,9 @@
 				return;
 			}
 			messages = [...messages, { content: result.last_move_described, imageUrl: '/api/board/' + result.last_move_img ,  type: 'other' }];
+			if (result.current_fen && isWhiteTurn(result.current_fen)) {
+				messages = [...messages, { content: `It's your turn`, type: 'other' }];
+			}
 			console.log(messages);
 		}
 	}
@@ -120,16 +120,12 @@
 		}
 	}
 
-	function  getAnonGuid() {
-		return randomGuid
-	}
 
 	async function updateStatus(): Promise<GameStatus> {
 		const response = await fetch('/api/status', {
 			method: 'GET', // Specify the method
 			headers: {
-				'Content-Type': 'application/json',
-				'x-client-anon-guid': getAnonGuid()
+				'Content-Type': 'application/json'
 			}
 		});
 		const result = await response.json();
@@ -150,8 +146,7 @@
 		const response = await fetch(endpoint, {
 			method: 'POST', // Specify the method
 			headers: {
-				'Content-Type': 'application/json',
-				'x-client-anon-guid': getAnonGuid()
+				'Content-Type': 'application/json'
 			},
 			body: JSON.stringify(data)
 		});
@@ -183,9 +178,17 @@
 			}
 		];
 	}
+	function isWhiteTurn(fen: string): boolean {
+		const parts = fen.split(" ");
+		if (parts.length < 2) {
+			return false;
+		}
+		const playerToMove = parts[1];
+		return playerToMove === 'w';
+	}
 </script>
 <div class="container md-auto">
-	<div class="flex-1 p:2 sm:p-6 justify-between flex flex-col h-[calc(100vh-24px)]">
+	<div class="flex-1 p:2 sm:p-6 justify-between flex flex-col h-[calc(100vh-64px)]">
 		<MenuLink activeUrl="false" href="/" content="Home" />
 		<ConversationHeader username="Chessy" jobTitle="Chess AI" avatarUrl={botAvatarUrl} on:message={clearMessages}/>
 		<ChatMessagesBody>

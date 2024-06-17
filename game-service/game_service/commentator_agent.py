@@ -51,8 +51,13 @@ Reason: {REASON}
 """
 history = []
 
+def prune_history():
+    global history
+    if len(history) > 5:
+        history = history[-5:]
 
 def comment_move(fen: str, previous_fen: str, player: str, move: str) -> str:
+    prune_history()
     user_prompt = (system_message_comment
                    .replace("{FEN}", fen)
                    .replace("{PREVIOUS_FEN}", previous_fen)

@@ -24,6 +24,7 @@ exports.startNewGame = function(req, res) {
     chessGame.save(function(err, chess) {
         if(err) {
             res.send(err);
+            return;
         }
         var gameStatus = new Status();
 

@@ -61,7 +61,7 @@ module fetchLatestImage '../modules/fetch-container-image.bicep' = {
 resource app 'Microsoft.App/containerApps@2023-05-02-preview' = {
   name: name
   location: location
-  tags: union(tags, {'azd-service-name':  'stockfish-server' })
+  tags: union(tags, {'azd-service-name':  'stockfish' })
   dependsOn: [ acrPullRole ]
   identity: {
     type: 'UserAssigned'
@@ -121,7 +121,7 @@ resource app 'Microsoft.App/containerApps@2023-05-02-preview' = {
       ]
       scale: {
         minReplicas: 1
-        maxReplicas: 10
+        maxReplicas: 2
       }
     }
   }

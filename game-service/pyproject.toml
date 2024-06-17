@@ -21,6 +21,7 @@ opentelemetry-sdk = "^1.25.0"
 opentelemetry-instrumentation-requests = "^0.46b0"
 azure-monitor-opentelemetry-exporter = "^1.0.0b26"
 opentelemetry-instrumentation-fastapi = "^0.46b0"
+cachetools = "^5.3.3"
 
 [tool.poetry.group.test.dependencies]
 pytest = "^7.4.3"

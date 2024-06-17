@@ -52,10 +52,10 @@
           ]
         }
       },
-      "stockfishServerExists": {
-        "value": "${SERVICE_STOCKFISH_SERVER_RESOURCE_EXISTS=false}"
+      "stockfishExists": {
+        "value": "${SERVICE_STOCKFISH_RESOURCE_EXISTS=false}"
       },
-      "stockfishServerDefinition": {
+      "stockfishDefinition": {
         "value": {
           "settings": [
             {

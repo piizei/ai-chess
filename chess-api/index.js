@@ -7,6 +7,7 @@ var routesApi = require('./api/routes/apiRoutes');
 var app = express();
 var player = require('./api/models/playerModel');
 var status = require('./api/models/chessboardModel');
+const {useAzureMonitor} = require('@azure/monitor-opentelemetry');
 var port = process.env.PORT || 3000;
 
 if (process.env.APPLICATIONINSIGHTS_CONNECTION_STRING) {

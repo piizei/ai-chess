@@ -25,12 +25,15 @@ param chatUiDefinition object
 param chessApiExists bool
 @secure()
 param chessApiDefinition object
-param stockfishServerExists bool
+param stockfishExists bool
 @secure()
-param stockfishServerDefinition object
+param stockfishDefinition object
 param gameServiceExists bool
 @secure()
 param gameServiceDefinition object
+param ragServiceExists bool
+@secure()
+param ragServiceDefinition object
 @secure()
 param azureSearchKey string
 param azureSearchEndpoint string
@@ -141,7 +144,7 @@ module chatUi './app/chat-ui.bicep' = {
     appDefinition: chatUiDefinition
     apiUrls: [
       chessApi.outputs.uri
-      stockfishServer.outputs.uri
+      stockfish.outputs.uri
       gameService.outputs.uri
       ragService.outputs.uri
     ]
@@ -163,26 +166,26 @@ module chessApi './app/chess-api.bicep' = {
     appDefinition: chessApiDefinition
     cosmosDbConnectionString: vault.getSecret(cosmosDb.outputs.connectionStringKey)
     allowedOrigins: [
-      'https://${abbrs.appContainerApps}chat-ui-${resourceToken}.${appsEnv.outputs.domain}'
+      'https://${abbrs.appContainerApps}game-service-${resourceToken}.${appsEnv.outputs.domain}'
     ]
   }
   scope: rg
 }
 
-module stockfishServer './app/stockfish-server.bicep' = {
-  name: 'stockfish-server'
+module stockfish './app/stockfish.bicep' = {
+  name: 'stockfish'
   params: {
-    name: '${abbrs.appContainerApps}stockfish-se-${resourceToken}'
+    name: '${abbrs.appContainerApps}stockfish-${resourceToken}'
     location: location
     tags: tags
-    identityName: '${abbrs.managedIdentityUserAssignedIdentities}stockfish-se-${resourceToken}'
+    identityName: '${abbrs.managedIdentityUserAssignedIdentities}stockfish-${resourceToken}'
     applicationInsightsName: monitoring.outputs.applicationInsightsName
     containerAppsEnvironmentName: appsEnv.outputs.name
     containerRegistryName: registry.outputs.name
-    exists: stockfishServerExists
-    appDefinition: stockfishServerDefinition
+    exists: stockfishExists
+    appDefinition: stockfishDefinition
     allowedOrigins: [
-      'https://${abbrs.appContainerApps}chat-ui-${resourceToken}.${appsEnv.outputs.domain}'
+      'https://${abbrs.appContainerApps}game-service-${resourceToken}.${appsEnv.outputs.domain}'
     ]
   }
   scope: rg
@@ -196,7 +199,7 @@ module gameService './app/game-service.bicep' = {
     tags: tags
     apiUrls: [
           chessApi.outputs.uri
-          stockfishServer.outputs.uri
+          stockfish.outputs.uri
         ]
     identityName: '${abbrs.managedIdentityUserAssignedIdentities}game-service-${resourceToken}'
     applicationInsightsName: monitoring.outputs.applicationInsightsName
@@ -225,7 +228,7 @@ module ragService './app/rag-service.bicep' = {
     applicationInsightsName: monitoring.outputs.applicationInsightsName
     containerAppsEnvironmentName: appsEnv.outputs.name
     containerRegistryName: registry.outputs.name
-    exists: gameServiceExists
+    exists: ragServiceExists
     appDefinition: gameServiceDefinition
     azureOpenAiEndpoint: azureOpenAiEndpoint2
     azureOpenAiApiKey: azureOpenAiApiKey2

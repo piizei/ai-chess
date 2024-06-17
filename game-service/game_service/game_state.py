@@ -6,7 +6,7 @@ import logging
 import requests
 from fentoboardimage import fenToImage, loadPiecesFolder
 from opentelemetry.trace import StatusCode, Status
-
+from cachetools import TTLCache, cached
 from game_service.commentator_agent import comment_move, comment_victory
 from game_service.model import Game, games
 from game_service.mongo_utils import get_collection
@@ -38,16 +38,25 @@ def create_game(start_date: datetime):
         last_move_img=None,
     )
     response = requests.get(f"{base_url}")
-    game.game_id = response.json()["game_id"]
-    response = requests.post(f"{base_url}/fen", json={"game_id": game.game_id})
-    game.current_fen = response.json()["fen_string"]
-    result = collection.insert_one(game.dict())
+    resp_json = response.json()
+    if "game_id" in resp_json:
+        game.game_id = response.json()["game_id"]
+        response = requests.post(f"{base_url}/fen", json={"game_id": game.game_id})
+        game.current_fen = response.json()["fen_string"]
+        return collection.insert_one(game.dict())
+    else:
+        logging.error("No game_id in response")
+        print(resp_json)
+        print(response)
+        return None
 
 
+@cached(cache=TTLCache(maxsize=32, ttl=30))
 def check_game():
     return get_collection().find_one({"starts": {"$lt": datetime.now()}, "is_over": False})
 
 
+@cached(cache=TTLCache(maxsize=32, ttl=30))
 def get_next_game():
     return get_collection().find_one({"starts": {"$gt": datetime.now()}, "is_over": False})
 
@@ -90,13 +99,17 @@ async def game_loop(static_dir: str):
     while True:
         with tracer.start_as_current_span("game-loop") as span:
             try:
-                print("Running task")
+                logging.debug("Running task")
                 if "current_game" not in games or games["current_game"].is_over:
                     game_dict = check_game()
                     if game_dict:
+                        logging.debug("Loaded game")
                         span.add_event("Loaded game")
                         game = Game(**game_dict)
                         games["current_game"] = game
+                    else:
+                        logging.debug("No game found in database")
+                        span.add_event("No game found from database")
                 else:
                     game = games["current_game"]
 
@@ -117,12 +130,14 @@ async def game_loop(static_dir: str):
                             move = get_best_move(game.current_fen)
                             await update_turn(static_dir, game, move, "AI")
                 else:
+                    logging.debug("No game found")
                     span.add_event("No game found")
                 await asyncio.sleep(loop_interval)
             except Exception as e:
                 span.add_event("Exception in game loop")
                 span.set_status(Status(StatusCode.ERROR))
                 span.record_exception(e)
+                logging.exception(f"An error occurred in game_loop: {e}")
                 logging.debug(games["current_game"])
                 logging.error(f"An error occurred in game_loop: {e}")
                 await asyncio.sleep(loop_interval)
@@ -140,19 +155,34 @@ async def update_turn(static_dir, game, move, player):
     game.previous_fen = game.current_fen
     with requests.post(f"{base_url}/fen", json={"game_id": game.game_id}) as response:
         response.raise_for_status()
-        game.current_fen = response.json()["fen_string"]
+        response_json = response.json()
+        if "fen_string" in response_json:
+            game.current_fen = response_json["fen_string"]
+        else:
+            logging.error("No fen_string in response")
+            # Todo, likely the game had expired. Figure out recovery.
     if game.is_over:
         game.winner = check_response.json()["status"]
         game.last_move_described = comment_victory(game.current_fen, game.previous_fen, player, game.winner)
     else:
-        game.last_move_described = comment_move(game.current_fen, game.previous_fen, player, start + end)
+        game.last_move_described = "Turn " + str(len(game.moves)) + " " + comment_move(game.current_fen,
+                                                                                       game.previous_fen,
+                                                                                       player,
+                                                                                       start + end)
     logging.debug("Creating image")
+    # are we running in docker:
+    path = os.getcwd()
+    if "/usr/src/app" in path:
+        path = "/usr/src/app/pieces"
+    else:
+        path = "./pieces"
+
     image = fenToImage(
         fen=game.current_fen,
         squarelength=33,
         darkColor="#D18B47",
         lightColor="#FFCE9E",
-        pieceSet=loadPiecesFolder("./pieces"),
+        pieceSet=loadPiecesFolder(path),
         lastMove={"before": start, "after": end, "darkColor": "#1D9413", "lightColor": "#32F321"},
     )
     random_name = secrets.token_hex(8)

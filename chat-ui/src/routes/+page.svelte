@@ -1,5 +1,6 @@
 <script>
 	import { goto } from '$app/navigation';
+	import { GithubSolid } from 'flowbite-svelte-icons';
 </script>
 <!--Hero-->
 <div class="pt-24">
@@ -9,8 +10,9 @@
 			<p class="uppercase tracking-loose w-full">Cloud Leadership Day | Data & AI Leadership Day 2024</p>
 			<h1 class="my-4 text-5xl font-bold leading-tight">Welcome to the lazy engineers' chat</h1>
 			<p class="leading-normal text-2xl mb-8">
-				You can play co-operative chess, or chat with expert AI. We are here to help you.
+				You can play co-operative chess, or chat with expert AI. We are here to help you.<GithubSolid size="lg" on:click={() => goto('https://github.com/piizei/ai-chess')}/>
 			</p>
+
 			<button
 					class="mx-auto lg:mx-0 hover:underline bg-white text-gray-800 font-bold rounded-full my-6 py-4 px-8 shadow-lg focus:outline-none focus:shadow-outline transform transition hover:scale-105 duration-300 ease-in-out"
 					on:click={() => goto('/chess')}

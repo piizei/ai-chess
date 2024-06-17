@@ -27,10 +27,10 @@ logging.basicConfig(level=logging.DEBUG)
 async def lifespan(app: FastAPI):
     task = asyncio.create_task(game_loop(static_dir))
     worker_task = asyncio.create_task(worker(games))
-    print(f"Starting up {task}")
-    print(f"Starting up {worker_task}")
+    logging.info(f"Starting up {task}")
+    logging.info(f"Starting up {worker_task}")
     yield
-    print("Shutting down")
+    logging.info("Shutting down")
 
 
 app = FastAPI(lifespan=lifespan)
@@ -59,8 +59,9 @@ async def vote_move(msg: VoteMessage) -> VoteResponse:
                     votes_per_user[turn].append(msg.user)
             else:
                 votes_per_user[turn] = [msg.user]
-        except:
+        except Exception as e: # just ignore if there is concurrency issues
             span.add_event("Vote management crashed")
+            logging.exception(f"An exception in vote management: {e}")
 
         msg.turn = turn
         await task_queue.put(msg)

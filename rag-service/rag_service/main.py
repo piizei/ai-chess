@@ -3,6 +3,7 @@ import logging
 from typing import Optional
 
 from dotenv import load_dotenv
+load_dotenv()
 from fastapi import FastAPI
 import uvicorn
 from langchain.chains.conversational_retrieval.base import ConversationalRetrievalChain
@@ -16,8 +17,6 @@ from rag_service.ai_retriever import AISearchRetriever
 from rag_service.config import config
 from rag_service.openai_helper import get_llm
 from rag_service.prompts import CUSTOM_CHATBOT_PREFIX
-
-load_dotenv()
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -37,10 +36,10 @@ class ChatResponse(BaseModel):
 
 @app.post("/chat")
 async def chat(msg: ChatRequest) -> ChatResponse:
-    retriever = AISearchRetriever(indexes=config["AZURE_SEARCH_INDEX"])
+    retriever = AISearchRetriever(indexes=config["AZURE_SEARCH_INDEX"].split(","))
     chat_message_history = MongoDBChatMessageHistory(
         session_id=msg.session,
-        connection_string=config["MONGODB_CONNECTION_STRING"]
+        connection_string=config["MONGO_CONNECTION"]
     )
     llm = get_llm(max_tokens=config["LLM_MAX_TOKENS"], verbose=True)
     memory = ConversationSummaryBufferMemory(
@@ -59,7 +58,7 @@ async def chat(msg: ChatRequest) -> ChatResponse:
 async def delete_chat_session(session_id: str):
     chat_message_history = MongoDBChatMessageHistory(
         session_id=session_id,
-        connection_string=os.getenv("MONGODB_CONNECTION_STRING")
+        connection_string=os.getenv("MONGO_CONNECTION")
     )
     chat_message_history.clear()
 

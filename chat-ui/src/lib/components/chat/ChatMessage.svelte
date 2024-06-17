@@ -1,5 +1,7 @@
 <script lang="ts">
-	import { marked } from 'marked';
+	import SvelteMarkdown from 'svelte-markdown';
+	import LinkComponent from '$lib/components/chat/LinkComponent.svelte';
+
 	export let who: 'me' | 'other' = 'me';
 	export let content: {content: string, imageUrl: string}[] = [];
 	export let avatarUrl = '';
@@ -20,7 +22,7 @@
 						? 'bg-gray-200'
 						: 'bg-blue-600'} {who === 'other' ? 'text-gray-600' : 'text-white'}"
 				>
-					<span>{@html marked(line.content)}</span>
+					<span><SvelteMarkdown source={line.content} renderers={{ link: LinkComponent }}/></span>
 
 				</div>
 				{#if line.imageUrl}

@@ -119,11 +119,11 @@ resource app 'Microsoft.App/containerApps@2023-05-02-preview' = {
              }
              {
                name: 'CHESS_API'
-               value: apiUrls[0]
+               value: '${apiUrls[0]}/api/v1/chess/two'
              }
              {
                name: 'STOCKFISH_SERVER'
-               value: apiUrls[1]
+               value: '${apiUrls[1]}/'
              }
             {
               name: 'PORT'

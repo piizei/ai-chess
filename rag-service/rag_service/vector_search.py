@@ -29,7 +29,7 @@ def get_search_results(query: str, indexes: list,
                        k: int = 5,
                        reranker_threshold: float = 1.5,
                        sas_token: str = "",
-                       vector_search: bool = False,
+                       vector_search: bool = True,
                        similarity_k: int = 5,
                        semantic: bool = False,
                        filter: str = None,
@@ -44,12 +44,10 @@ def get_search_results(query: str, indexes: list,
         # Don't use the k for semantic query, the reranker works best if you fetch 50 results and then filter
         # the best ones (k with reranker_threshold)
         search_payload = get_semantic_query(query, 50)
-        if vector_search:
-            search_payload["vectorQueries"] = [
-                {"kind": "vector", "vector": query_vector, "fields": "chunkVector,titleVector", "k": k}]
-            search_payload["select"] = "id, title, document_id, chunk, url"
-        else:
-            search_payload["select"] = "id, title, document_id, chunk, url"
+        search_payload["vectorQueries"] = [
+            {"kind": "vector", "vector": query_vector, "fields": "contentVector", "k": k}]
+        search_payload["select"] = "id, title, content, url"
+        search_payload["semanticConfiguration"] = "default"
 
         if filter:
             search_payload['filter'] = filter
@@ -62,7 +60,6 @@ def get_search_results(query: str, indexes: list,
 
         search_results = resp.json()
         agg_search_results[index] = search_results
-    print(len(search_results))
     content = dict()
     ordered_content = OrderedDict()
 
@@ -85,7 +82,7 @@ def get_search_results(query: str, indexes: list,
             if not any(existing_result['title'] == result['title'] for existing_result in content.values()):
                 content[result['id']] = {
                     "title": result['title'],
-                    "chunk": result['chunk'],
+                    "chunk": result['content'],
                     "url": result['url'] + sas_token if result['url'] else "",
                     "caption": caption,
                     "index": index
@@ -101,10 +98,7 @@ def get_search_results(query: str, indexes: list,
 
     # After results have been filtered, sort and add the top k to the ordered_content
     #  Todo: needs to be rethinked with reranker
-    if vector_search:
-        topk = similarity_k
-    else:
-        topk = similarity_k
+    topk = similarity_k
 
     count = 0  # To keep track of the number of results added
     for id in sorted(content, key=lambda x: content[x]["score"], reverse=True):

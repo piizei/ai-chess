@@ -1,14 +1,15 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
+import crypto from 'crypto';
 
 const BACKEND_URL = process.env.GAME_SERVICE_URL || 'http://127.0.0.1:8000';
 export const POST: RequestHandler = async ({ request }) => {
 	const body = await request.json();
 	const { message: prompt } = body;
-	// GET user from x-ms-client-principal-name header ir just use the string 'user'
-	const user = request.headers.get('x-ms-client-principal-name') || request.headers.get('x-client-anon-guid')  || 'user';
+	const sessionRaw = request.headers.get('cookie') || 'session';
+	const session = crypto.createHash('md5').update(sessionRaw).digest('hex');
 	const data = {
-		user,
+		user: session,
 		message: prompt
 	};
 	try {

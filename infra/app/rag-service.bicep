@@ -19,8 +19,9 @@ param cosmosDbConnectionString string
 @secure()
 param azureSearchKey string
 param azureSearchEndpoint string
-param azureSearchIndex string = 'default'
+param azureSearchIndex string = 'docs2'
 param azureSearchEmbeddingModel string = 'text-embedding-ada-002'
+param azureOpenAiApiVersion string = '2024-02-01'
 
 var appSettingsArray = filter(array(appDefinition.settings), i => i.name != '')
 var secrets = map(filter(appSettingsArray, i => i.?secret != null), i => {
@@ -123,7 +124,7 @@ resource app 'Microsoft.App/containerApps@2023-05-02-preview' = {
               value: applicationInsights.properties.ConnectionString
             }
             {
-              name: 'MONGODB_CONNECTION_STRING'
+              name: 'MONGO_CONNECTION'
               secretRef: 'azure-cosmos-connection-string'
              }
             {
@@ -157,6 +158,10 @@ resource app 'Microsoft.App/containerApps@2023-05-02-preview' = {
             {
                           name: 'AZURE_SEARCH_EMBEDDING_MODEL'
                           value: azureSearchEmbeddingModel
+            }
+            {
+                          name: 'AZURE_OPENAI_API_VERSION'
+                          value: azureOpenAiApiVersion
             }
           ],
           env,

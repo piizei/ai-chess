@@ -6,5 +6,5 @@ RUN --mount=type=bind,source=package.json,target=package.json \
     npm ci --omit=dev \
 USER node
 COPY . .
-EXPOSE 8080
+EXPOSE 80
 CMD node server.js

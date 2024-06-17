@@ -2,7 +2,7 @@
 
 const express = require('express')
 const app = express()
-const port = 8080
+const port =  process.env.PORT || 8080
 const stockfish = require("stockfish");
 const engine = stockfish();
 const fenregex = "/^([rnbqkpRNBQKP1-8]+\/){7}([rnbqkpRNBQKP1-8]+)\s[bw]\s(-|K?Q?k?q?)\s(-|[a-h][36])\s(0|[1-9][0-9]*)\s([1-9][0-9]*)/"

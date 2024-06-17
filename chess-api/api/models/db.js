@@ -8,7 +8,7 @@ var autoReconnect = true;
 
 //var db_URI = 'mongodb://localhost/ElmChessDb'
 console.log('MONGO_CONNECTION: ' + process.env.MONGO_CONNECTION);
-var db_URI = process.env.MONGO_CONNECTION;
+const db_URI = process.env.MONGO_CONNECTION.replace('==', '%3D%3D').replace("&replicaSet=globaldb","")
 connect();
 
 function connect() {

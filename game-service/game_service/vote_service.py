@@ -23,6 +23,7 @@ def get_voted_move(turn: int, fen) -> str:
     if turn in votes:
         print(f"Votes: {votes[turn]}")
         max_voted_move = max(votes[turn], key=votes[turn].get)
+        del votes[turn]
         logging.debug(f"Most voted move in turn {turn} is {max_voted_move}")
         chess_game = Game(fen=fen)
         try:

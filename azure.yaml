@@ -29,7 +29,7 @@ services:
         language: python
         docker:
             path: Dockerfile
-    stockfish-server:
+    stockfish:
         project: stockfish-server
         host: containerapp
         language: js
